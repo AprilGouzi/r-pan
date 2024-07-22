@@ -1,12 +1,14 @@
 package com.imooc.pan.core.exception;
 
 import com.imooc.pan.core.response.ResponseCode;
+import lombok.Data;
 
 /**
  * @author 囍崽
  * version 1.0
  * 自定义全局业务异常类
  */
+@Data
 public class RPanBusinessException extends RuntimeException {
 
     /**

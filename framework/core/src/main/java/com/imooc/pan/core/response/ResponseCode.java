@@ -8,6 +8,16 @@ import lombok.Getter;
  * version 1.0
  * 通用返回状态码
  */
+
+/**
+ * <body>
+ *     <p>自定义枚举类</p><br>
+ *     <p>1.对象属性，用private final修饰</p><br>
+ *     <p>2.构造器私有化，private修饰</p><br>
+ *     <p>3.对象在类中创建完成,public static final修饰</p><br>
+ *     <p>4.可以存在其他的方法，如对象属性的getter方法，toString方法</p>
+ * </body>
+ */
 @AllArgsConstructor
 @Getter
 public enum ResponseCode {
