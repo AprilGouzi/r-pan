@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>web</module>
+        <module>swagger</module>
     </modules>
 
     <properties>
