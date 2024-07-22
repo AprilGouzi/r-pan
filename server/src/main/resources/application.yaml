@@ -26,7 +26,7 @@ swagger2:
   title: r-pan-server docs
   description: r-pan-server docs
   terms-of-service-url: http://127.0.0.1:${server.port}
-  contact-name: rubin
+  contact-name: aprilgouzi
   contact-url: https://blog.rubinchu.com
-  contact-email: rubinchu@126.com
+  contact-email: aprilgouzi@163.com
   version: 1.0
