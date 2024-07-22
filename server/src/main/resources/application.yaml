@@ -11,14 +11,17 @@ spring:
     multipart:
       max-file-size: 3072MB
       max-request-size: 3072MB
+# 服务端端口
 server:
   port: 8080
+# 监控和管理SpringBoot项目
 management:
   endpoints:
     web:
       exposure:
         include: '*'
         exclude: env,beans
+# swagger2接口文档相关配置
 swagger2:
   show: true
   group-name: ${spring.application.name}
