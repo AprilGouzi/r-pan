@@ -32,6 +32,6 @@ public class RPanServerLauncher {
 
     @GetMapping("/hello")
     public R<String> hello(String name){
-        return R.success("hello " + name + "!");
+        return R.success("hello " + name + "change!");
     }
 }
