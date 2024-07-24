@@ -19,6 +19,7 @@
         <module>server</module>
         <module>framework/core</module>
         <module>framework/core</module>
+        <module>distribution</module>
     </modules>
     <packaging>pom</packaging>
 

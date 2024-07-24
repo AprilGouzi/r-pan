@@ -24,8 +24,8 @@ public class WebValidatorConfig {
     public MethodValidationPostProcessor methodValidationPostProcessor() {
         MethodValidationPostProcessor postProcessor = new MethodValidationPostProcessor();
         postProcessor.setValidator(rPanValidator());
-        log.info("休眠验证器加载成功！");
-        //log.info("The hibernate validator is loaded successfully!");
+        //log.info("休眠验证器加载成功！");
+        log.info("The hibernate validator is loaded successfully!");
         return postProcessor;
     }
 

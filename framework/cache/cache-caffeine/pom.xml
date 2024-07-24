@@ -5,24 +5,33 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.imooc.pan</groupId>
-        <artifactId>r-pan-parent</artifactId>
+        <artifactId>r-pan-cache</artifactId>
         <version>1.0</version>
     </parent>
 
-    <artifactId>r-pan-framework</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>web</module>
-        <module>swagger</module>
-        <module>orm</module>
-        <module>orm/mybatis-plus</module>
-        <module>cache</module>
-    </modules>
+    <artifactId>r-pan-cache-caffeine</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.imooc.pan</groupId>
+            <artifactId>r-pan-cache-core</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -5,18 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.imooc.pan</groupId>
-        <artifactId>r-pan-parent</artifactId>
+        <artifactId>r-pan-framework</artifactId>
         <version>1.0</version>
     </parent>
 
-    <artifactId>r-pan-framework</artifactId>
+    <artifactId>r-pan-cache</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>web</module>
-        <module>swagger</module>
-        <module>orm</module>
-        <module>orm/mybatis-plus</module>
-        <module>cache</module>
+        <module>cache-core</module>
+        <module>cache-caffeine</module>
+        <module>cache-redis</module>
     </modules>
 
     <properties>

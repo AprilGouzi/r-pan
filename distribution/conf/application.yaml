@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: r-pan-server
+  output:
+    ansi:
+      enabled: always # 日志打印彩色
+  mvc:
+    servlet:
+      load-on-startup: 1
+  servlet:
+    multipart:
+      max-file-size: 3072MB
+      max-request-size: 3072MB
+# 服务端端口
+server:
+  port: 8080
+# 监控和管理SpringBoot项目
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: env,beans
+# swagger2接口文档相关配置
+swagger2:
+  show: true
+  group-name: ${spring.application.name}
+  base-package: com.imooc.pan
+  title: r-pan-server docs
+  description: r-pan-server docs
+  terms-of-service-url: http://127.0.0.1:${server.port}
+  contact-name: aprilgouzi
+  contact-url: https://blog.rubinchu.com
+  contact-email: aprilgouzi@163.com
+  version: 1.0
+
+logging:
+  file: ${user.home}/logs/${spring.application.name}/${spring.application.name}.log
+  level:
+    root: INFO
