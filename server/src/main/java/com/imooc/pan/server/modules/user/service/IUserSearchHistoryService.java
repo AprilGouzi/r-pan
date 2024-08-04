@@ -12,6 +12,6 @@ import com.imooc.pan.server.modules.user.entity.RPanUserSearchHistory;
  * @author aprilgouzi
  * @since 2024-07-23
  */
-public interface IRPanUserSearchHistoryService extends IService<RPanUserSearchHistory> {
+public interface IUserSearchHistoryService extends IService<RPanUserSearchHistory> {
 
 }

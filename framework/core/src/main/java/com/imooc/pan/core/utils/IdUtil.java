@@ -194,8 +194,8 @@ public class IdUtil {
             ByteBuffer byteBuffer = ByteBuffer.allocate(8);
             byteBuffer.putLong(0, id);
             byte[] content = byteBuffer.array();
-            byte[] encrypt = AES128Util.aesEncrypt(content);
-            return Base64.encode(encrypt);
+            byte[] encrypt = AES128Util.aesEncrypt(content);//对称加密
+            return Base64.encode(encrypt);//二进制编码
         }
         return StringUtils.EMPTY;
     }
