@@ -6,6 +6,9 @@ import com.imooc.pan.core.exception.RPanBusinessException;
 import com.imooc.pan.core.response.ResponseCode;
 import com.imooc.pan.core.utils.IdUtil;
 import com.imooc.pan.core.utils.PasswordUtil;
+import com.imooc.pan.server.modules.file.constants.FileConstants;
+import com.imooc.pan.server.modules.file.context.CreateFolderContext;
+import com.imooc.pan.server.modules.file.service.IUserFileService;
 import com.imooc.pan.server.modules.user.context.UserRegisterContext;
 import com.imooc.pan.server.modules.user.converter.UserConverter;
 import com.imooc.pan.server.modules.user.entity.RPanUser;
@@ -32,6 +35,9 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
     @Autowired
     private UserConverter userConverter;
 
+    @Autowired
+    private IUserFileService iUserFileService;
+
     /**
      * <h3>用户注册的业务实现</h3><br>
      * 需要实现的功能点：<br>
@@ -56,12 +62,18 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
         return userRegisterContext.getEntity().getUserId();
     }
 
+    /* ***********************************************private*********************************************** */
     /**
      * 创建用户的根目录信息
      *
      * @param userRegisterContext
      */
     private void createUserRootFolder(UserRegisterContext userRegisterContext) {
+        CreateFolderContext createFolderContext = new CreateFolderContext();
+        createFolderContext.setParentId(FileConstants.TOP_PARENT_ID);
+        createFolderContext.setUserId(userRegisterContext.getEntity().getUserId());
+        createFolderContext.setFolderName(FileConstants.ALL_FILE_CN_STR);
+        iUserFileService.createFolder(createFolderContext);
     }
 
     /**

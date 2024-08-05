@@ -2,6 +2,7 @@ package com.imooc.pan.server.modules.file.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.imooc.pan.server.modules.file.context.CreateFolderContext;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 
 /**
@@ -12,6 +13,7 @@ import com.imooc.pan.server.modules.file.entity.RPanUserFile;
  * @author aprilgouzi
  * @since 2024-07-23
  */
-public interface IRPanUserFileService extends IService<RPanUserFile> {
+public interface IUserFileService extends IService<RPanUserFile> {
 
+    Long createFolder(CreateFolderContext createFolderContext);
 }

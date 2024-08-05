@@ -12,6 +12,6 @@ import com.imooc.pan.server.modules.file.entity.RPanFile;
  * @author aprilgouzi
  * @since 2024-07-23
  */
-public interface IRPanFileService extends IService<RPanFile> {
+public interface IFileService extends IService<RPanFile> {
 
 }

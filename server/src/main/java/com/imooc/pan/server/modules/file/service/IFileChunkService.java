@@ -12,6 +12,6 @@ import com.imooc.pan.server.modules.file.entity.RPanFileChunk;
  * @author aprilgouzi
  * @since 2024-07-23
  */
-public interface IRPanFileChunkService extends IService<RPanFileChunk> {
+public interface IFileChunkService extends IService<RPanFileChunk> {
 
 }

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+import java.util.Date;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -45,28 +47,28 @@ public class RPanUserFile implements Serializable {
     private String filename;
 
     @ApiModelProperty(value = "是否是文件夹 （0 否 1 是）")
-    private Boolean folderFlag;
+    private Integer folderFlag;
 
     @ApiModelProperty(value = "文件大小展示字符")
     private String fileSizeDesc;
 
     @ApiModelProperty(value = "文件类型（1 普通文件 2 压缩文件 3 excel 4 word 5 pdf 6 txt 7 图片 8 音频 9 视频 10 ppt 11 源码文件 12 csv）")
-    private Boolean fileType;
+    private Integer fileType;
 
     @ApiModelProperty(value = "删除标识（0 否 1 是）")
-    private Boolean delFlag;
+    private Integer delFlag;
 
     @ApiModelProperty(value = "创建人")
     private Long createUser;
 
     @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
+    private Date createTime;
 
     @ApiModelProperty(value = "更新人")
     private Long updateUser;
 
     @ApiModelProperty(value = "更新时间")
-    private LocalDateTime updateTime;
+    private Date updateTime;
 
 
 }
