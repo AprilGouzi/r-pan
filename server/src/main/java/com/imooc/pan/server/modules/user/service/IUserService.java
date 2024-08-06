@@ -2,9 +2,9 @@ package com.imooc.pan.server.modules.user.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.imooc.pan.server.modules.user.context.UserLoginContext;
-import com.imooc.pan.server.modules.user.context.UserRegisterContext;
+import com.imooc.pan.server.modules.user.context.*;
 import com.imooc.pan.server.modules.user.entity.RPanUser;
+import com.imooc.pan.server.modules.user.vo.UserInfoVO;
 
 /**
  * <p>
@@ -21,4 +21,14 @@ public interface IUserService extends IService<RPanUser> {
     String login(UserLoginContext userLoginContext);
 
     void exit(Long aLong);
+
+    String checkUsername(CheckUsernameContext checkUsernameContext);
+
+    String checkAnswer(CheckAnswerContext checkAnswerContext);
+
+    void resetPassword(ResetPasswordContext resetPasswordContext);
+
+    void changPassword(ChangePasswordContext changePasswordContext);
+
+    UserInfoVO info(Long aLong);
 }

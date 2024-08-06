@@ -14,4 +14,5 @@ import com.imooc.pan.server.modules.user.entity.RPanUser;
  */
 public interface RPanUserMapper extends BaseMapper<RPanUser> {
 
+    String selectQuestionByUsername(String username);
 }

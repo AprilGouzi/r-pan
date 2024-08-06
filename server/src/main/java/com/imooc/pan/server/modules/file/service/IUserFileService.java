@@ -16,4 +16,6 @@ import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 public interface IUserFileService extends IService<RPanUserFile> {
 
     Long createFolder(CreateFolderContext createFolderContext);
+
+    RPanUserFile getUserRootFile(Long userId);
 }
