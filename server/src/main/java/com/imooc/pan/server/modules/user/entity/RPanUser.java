@@ -2,8 +2,11 @@ package com.imooc.pan.server.modules.user.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
 import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -25,13 +28,13 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("r_pan_user")
-@ApiModel(value="RPanUser对象", description="用户信息表")
+@ApiModel(value = "RPanUser对象", description = "用户信息表")
 public class RPanUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "用户id")
-    @TableId(value = "user_id", type = IdType.AUTO)
+    @TableId(value = "user_id")
     private Long userId;
 
     @ApiModelProperty(value = "用户名")

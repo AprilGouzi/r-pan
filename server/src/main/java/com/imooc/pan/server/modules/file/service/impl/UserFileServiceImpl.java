@@ -67,7 +67,7 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
                               Long userId,
                               String fileSizeDesc) {
         RPanUserFile entity = assembleRPanFUserFile(parentId, userId, filename, folderFlagEnum, fileType, realFileId, fileSizeDesc);
-        if (!save(entity)) {
+        if (!save((entity))) {
             throw new RPanBusinessException("保存文件信息失败");
         }
         return entity.getFileId();

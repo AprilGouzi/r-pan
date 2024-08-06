@@ -57,6 +57,10 @@ public class R<T> implements Serializable {
         return Objects.equals(this.code, ResponseCode.SUCCESS.getCode());
     }
 
+    public static <T> R<T> success() {
+        return new R<T>(ResponseCode.SUCCESS.getCode());
+    }
+
     public static <T> R<T> success(String message) {
         return new R<T>(ResponseCode.SUCCESS.getCode(), message);
     }

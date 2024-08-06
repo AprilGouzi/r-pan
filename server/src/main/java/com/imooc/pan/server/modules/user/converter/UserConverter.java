@@ -1,7 +1,9 @@
 package com.imooc.pan.server.modules.user.converter;
 
+import com.imooc.pan.server.modules.user.context.UserLoginContext;
 import com.imooc.pan.server.modules.user.context.UserRegisterContext;
 import com.imooc.pan.server.modules.user.entity.RPanUser;
+import com.imooc.pan.server.modules.user.po.UserLoginPO;
 import com.imooc.pan.server.modules.user.po.UserRegisterPO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,4 +31,6 @@ public interface UserConverter {
      */
     @Mapping(target = "password",ignore = true)
     RPanUser userRegisterContext2RPanUser(UserRegisterContext userRegisterContext);
+
+    UserLoginContext userLoginPO2UserLoginContext(UserLoginPO userLoginPO);
 }

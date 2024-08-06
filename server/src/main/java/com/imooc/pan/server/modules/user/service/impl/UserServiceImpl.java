@@ -1,20 +1,28 @@
 package com.imooc.pan.server.modules.user.service.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.imooc.pan.cache.core.constants.CacheConstants;
 import com.imooc.pan.core.exception.RPanBusinessException;
 import com.imooc.pan.core.response.ResponseCode;
 import com.imooc.pan.core.utils.IdUtil;
+import com.imooc.pan.core.utils.JwtUtil;
 import com.imooc.pan.core.utils.PasswordUtil;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.CreateFolderContext;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
+import com.imooc.pan.server.modules.user.constants.UserConstants;
+import com.imooc.pan.server.modules.user.context.UserLoginContext;
 import com.imooc.pan.server.modules.user.context.UserRegisterContext;
 import com.imooc.pan.server.modules.user.converter.UserConverter;
 import com.imooc.pan.server.modules.user.entity.RPanUser;
 import com.imooc.pan.server.modules.user.mapper.RPanUserMapper;
 import com.imooc.pan.server.modules.user.service.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +38,7 @@ import java.util.Objects;
  * @since 2024-07-23
  */
 @Service(value = "userService")
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> implements IUserService {
 
     @Autowired
@@ -37,6 +46,9 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
 
     @Autowired
     private IUserFileService iUserFileService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     /**
      * <h3>用户注册的业务实现</h3><br>
@@ -62,7 +74,96 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
         return userRegisterContext.getEntity().getUserId();
     }
 
+    /**
+     * 用户登录业务实现
+     * <p>
+     * 需要实现的功能：
+     * 1、用户的登录信息校验
+     * 2、生成一个具有时效性的accessToken
+     * 3、将accessToken缓存起来，去实现单机登录
+     *
+     * @param userLoginContext
+     * @return
+     */
+    @Override
+    public String login(UserLoginContext userLoginContext) {
+        checkLoginInfo(userLoginContext);
+        generateAndSaveAccessToken(userLoginContext);
+        return userLoginContext.getAccessToken();
+    }
+
+    /**
+     * 用户退出登录
+     * <p>
+     * 1、清除用户的登录凭证缓存
+     *
+     * @param userId
+     */
+
+    @Override
+    public void exit(Long userId) {
+        try {
+            Cache cache = cacheManager.getCache(CacheConstants.R_PAN_CACHE_NAME);
+            cache.evict(UserConstants.USER_LOGIN_PREFIX + userId);
+        } catch (Exception e) {
+            log.error("用户退出登录异常信息：{}", e);
+            throw new RPanBusinessException("退出登录失败");
+        }
+    }
+
     /* ***********************************************private*********************************************** */
+
+    /**
+     * 生成并保存登陆之后的凭证
+     *
+     * @param userLoginContext
+     */
+    private void generateAndSaveAccessToken(UserLoginContext userLoginContext) {
+        RPanUser entity = userLoginContext.getEntity();
+        String accessToken = JwtUtil.generateToken(entity.getUsername(), UserConstants.LOGIN_USER_ID, entity.getUserId(), UserConstants.ONE_DAY_LONG);
+
+        Cache cache = cacheManager.getCache(CacheConstants.R_PAN_CACHE_NAME);
+        cache.put(UserConstants.USER_LOGIN_PREFIX + entity.getUserId(), accessToken);
+
+        userLoginContext.setAccessToken(accessToken);
+    }
+
+
+    /**
+     * 校验用户名密码
+     *
+     * @param userLoginContext
+     */
+    private void checkLoginInfo(UserLoginContext userLoginContext) {
+        String username = userLoginContext.getUsername();
+        String password = userLoginContext.getPassword();
+
+        RPanUser entity = getRPanUserByUsername(username);
+        if (Objects.isNull(entity)) {
+            throw new RPanBusinessException("用户不存在");
+        }
+
+        String salt = entity.getSalt();
+        String encryptPassword = PasswordUtil.encryptPassword(salt, password);
+        String dbPassword = entity.getPassword();
+        if (!Objects.equals(encryptPassword, dbPassword)) {
+            throw new RPanBusinessException("用户名或密码错误");
+        }
+        userLoginContext.setEntity(entity);
+    }
+
+    /**
+     * 通过用户名称获取用户实体信息
+     *
+     * @param username
+     * @return
+     */
+    private RPanUser getRPanUserByUsername(String username) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("username", username);
+        return getOne(queryWrapper);
+    }
+
     /**
      * 创建用户的根目录信息
      *
@@ -86,7 +187,7 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
         RPanUser entity = userRegisterContext.getEntity();
         if (Objects.nonNull(entity)) {
             try {
-                if (!this.save(entity)) {
+                if (!this.save((entity))) {
                     throw new RPanBusinessException("用户注册失败");
                 }
             } catch (DuplicateKeyException e) {
