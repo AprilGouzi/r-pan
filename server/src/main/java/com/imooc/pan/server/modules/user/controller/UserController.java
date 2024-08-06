@@ -135,7 +135,7 @@ public class UserController {
     public R changePassword(@Validated @RequestBody ChangePasswordPO changePasswordPO) {
         ChangePasswordContext changePasswordContext = userConverter.changePasswordPO2ChangePasswordContext(changePasswordPO);
         changePasswordContext.setUserId(UserIdUtil.get());
-        iUserService.changPassword(changePasswordContext);
+        iUserService.changePassword(changePasswordContext);
         return R.success();
     }
 

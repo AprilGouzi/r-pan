@@ -5,9 +5,9 @@ import com.imooc.pan.core.exception.RPanBusinessException;
 import com.imooc.pan.core.utils.JwtUtil;
 import com.imooc.pan.server.RPanServerLauncher;
 import com.imooc.pan.server.modules.user.constants.UserConstants;
-import com.imooc.pan.server.modules.user.context.UserLoginContext;
-import com.imooc.pan.server.modules.user.context.UserRegisterContext;
+import com.imooc.pan.server.modules.user.context.*;
 import com.imooc.pan.server.modules.user.service.IUserService;
+import com.imooc.pan.server.modules.user.vo.UserInfoVO;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,6 +107,170 @@ public class UserTest {
         Long userId = (Long) JwtUtil.analyzeToken(accessToken, UserConstants.LOGIN_USER_ID);
 
         iUserService.exit(userId);
+    }
+
+    /**
+     * 校验用户名称通过
+     */
+    @Test
+    public void checkUsernameSuccess() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        CheckUsernameContext checkUsernameContext = new CheckUsernameContext();
+        checkUsernameContext.setUsername(USERNAME);
+        String question = iUserService.checkUsername(checkUsernameContext);
+        Assert.isTrue(StringUtils.isNotBlank(question));
+    }
+
+    /**
+     * 校验用户名称失败-没有查询到该用户
+     */
+    @Test(expected = RPanBusinessException.class)
+    public void checkUsernameNotExist() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        CheckUsernameContext checkUsernameContext = new CheckUsernameContext();
+        checkUsernameContext.setUsername(USERNAME + "_change");
+        iUserService.checkUsername(checkUsernameContext);
+    }
+
+    /**
+     * 校验用户密保问题答案通过
+     */
+    @Test
+    public void checkAnswerSuccess() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        CheckAnswerContext checkAnswerContext = new CheckAnswerContext();
+        checkAnswerContext.setUsername(USERNAME);
+        checkAnswerContext.setQuestion(QUESTION);
+        checkAnswerContext.setAnswer(ANSWER);
+
+        String token = iUserService.checkAnswer(checkAnswerContext);
+
+        Assert.isTrue(StringUtils.isNotBlank(token));
+    }
+
+    /**
+     * 校验用户密保问题答案失败
+     */
+    @Test(expected = RPanBusinessException.class)
+    public void checkAnswerFail() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        CheckAnswerContext checkAnswerContext = new CheckAnswerContext();
+        checkAnswerContext.setUsername(USERNAME);
+        checkAnswerContext.setQuestion(QUESTION);
+        checkAnswerContext.setAnswer(ANSWER + "_change");
+
+        iUserService.checkAnswer(checkAnswerContext);
+    }
+
+    /**
+     * 正常重置用户密码
+     */
+    @Test
+    public void resetPasswordSuccess() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        CheckAnswerContext checkAnswerContext = new CheckAnswerContext();
+        checkAnswerContext.setUsername(USERNAME);
+        checkAnswerContext.setQuestion(QUESTION);
+        checkAnswerContext.setAnswer(ANSWER);
+
+        String token = iUserService.checkAnswer(checkAnswerContext);
+
+        Assert.isTrue(StringUtils.isNotBlank(token));
+
+        ResetPasswordContext resetPasswordContext = new ResetPasswordContext();
+        resetPasswordContext.setUsername(USERNAME);
+        resetPasswordContext.setPassword(PASSWORD + "_change");
+        resetPasswordContext.setToken(token);
+
+        iUserService.resetPassword(resetPasswordContext);
+    }
+
+    /**
+     * 用户重置密码失败-token异常
+     */
+    @Test(expected = RPanBusinessException.class)
+    public void resetPasswordTokenError() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        CheckAnswerContext checkAnswerContext = new CheckAnswerContext();
+        checkAnswerContext.setUsername(USERNAME);
+        checkAnswerContext.setQuestion(QUESTION);
+        checkAnswerContext.setAnswer(ANSWER);
+
+        String token = iUserService.checkAnswer(checkAnswerContext);
+
+        Assert.isTrue(StringUtils.isNotBlank(token));
+
+        ResetPasswordContext resetPasswordContext = new ResetPasswordContext();
+        resetPasswordContext.setUsername(USERNAME);
+        resetPasswordContext.setPassword(PASSWORD + "_change");
+        resetPasswordContext.setToken(token + "_change");
+
+        iUserService.resetPassword(resetPasswordContext);
+    }
+
+    /**
+     * 正常在线修改密码
+     */
+    @Test
+    public void changePasswordSuccess() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        ChangePasswordContext changePasswordContext = new ChangePasswordContext();
+
+        changePasswordContext.setUserId(register);
+        changePasswordContext.setOldPassword(PASSWORD);
+        changePasswordContext.setNewPassword(PASSWORD + "_change");
+
+        iUserService.changePassword(changePasswordContext);
+    }
+
+    /**
+     * 修改密码失败-旧密码错误
+     */
+    @Test(expected = RPanBusinessException.class)
+    public void changePasswordFailByWrongOldPassword() {
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        ChangePasswordContext changePasswordContext = new ChangePasswordContext();
+
+        changePasswordContext.setUserId(register);
+        changePasswordContext.setOldPassword(PASSWORD + "_change");
+        changePasswordContext.setNewPassword(PASSWORD + "_change");
+
+        iUserService.changePassword(changePasswordContext);
+    }
+
+    @Test
+    public void testQueryUserInfo() {
+
+        UserRegisterContext context = createUserRegisterContext();
+        Long register = iUserService.register(context);
+        Assert.isTrue(register.longValue() > 0L);
+
+        UserInfoVO userInfoVO = iUserService.info(register);
+        Assert.notNull(userInfoVO);
     }
 
 

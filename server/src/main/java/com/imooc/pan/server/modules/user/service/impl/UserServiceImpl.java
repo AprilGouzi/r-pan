@@ -165,9 +165,9 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
      * @param changePasswordContext
      */
     @Override
-    public void changPassword(ChangePasswordContext changePasswordContext) {
+    public void changePassword(ChangePasswordContext changePasswordContext) {
         checkOldPassword(changePasswordContext);
-        doChangPassword(changePasswordContext);
+        doChangePassword(changePasswordContext);
         exitLoginStatus(changePasswordContext);
     }
 
@@ -223,7 +223,7 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
      *
      * @param changePasswordContext
      */
-    private void doChangPassword(ChangePasswordContext changePasswordContext) {
+    private void doChangePassword(ChangePasswordContext changePasswordContext) {
         String newPassword = changePasswordContext.getNewPassword();
         RPanUser entity = changePasswordContext.getEntity();
         String salt = entity.getSalt();

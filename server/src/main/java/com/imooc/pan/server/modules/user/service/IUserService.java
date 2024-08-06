@@ -28,7 +28,8 @@ public interface IUserService extends IService<RPanUser> {
 
     void resetPassword(ResetPasswordContext resetPasswordContext);
 
-    void changPassword(ChangePasswordContext changePasswordContext);
+    void changePassword(ChangePasswordContext changePasswordContext);
 
     UserInfoVO info(Long aLong);
+
 }
