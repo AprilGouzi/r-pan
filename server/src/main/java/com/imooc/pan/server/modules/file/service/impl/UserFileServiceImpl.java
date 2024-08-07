@@ -115,6 +115,9 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
         afterFileDelete(context);
     }
 
+
+    /**********************************************private*************************************************************/
+
     /**
      * 文件删除的后置操作
      * <p>
