@@ -2,7 +2,10 @@ package com.imooc.pan.server.modules.file.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.imooc.pan.server.modules.file.context.QueryRealFileListContext;
 import com.imooc.pan.server.modules.file.entity.RPanFile;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +17,5 @@ import com.imooc.pan.server.modules.file.entity.RPanFile;
  */
 public interface IFileService extends IService<RPanFile> {
 
+    List<RPanFile> getFileList(QueryRealFileListContext context);
 }
