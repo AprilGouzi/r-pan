@@ -77,5 +77,15 @@ public interface UserConverter {
      */
     ChangePasswordContext changePasswordPO2ChangePasswordContext(ChangePasswordPO changePasswordPO);
 
-    UserInfoVO assembleUserInfoVO(RPanUser entity, RPanUserFile rPanUserFile);
+    /**
+     * 拼装用户基本信息返回实体
+     *
+     * @param rPanUser
+     * @param rPanUserFile
+     * @return
+     */
+    @Mapping(source = "rPanUser.username", target = "username")
+    @Mapping(source = "rPanUserFile.fileId", target = "rootFileId")
+    @Mapping(source = "rPanUserFile.filename", target = "rootFilename")
+    UserInfoVO assembleUserInfoVO(RPanUser rPanUser, RPanUserFile rPanUserFile);
 }

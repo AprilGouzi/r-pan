@@ -29,7 +29,7 @@ public class RPanFile implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "文件id")
-    @TableId(value = "file_id", type = IdType.AUTO)
+    @TableId(value = "file_id")
     private Long fileId;
 
     @ApiModelProperty(value = "文件名称")

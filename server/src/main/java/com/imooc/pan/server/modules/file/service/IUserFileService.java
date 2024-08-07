@@ -3,7 +3,13 @@ package com.imooc.pan.server.modules.file.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.imooc.pan.server.modules.file.context.CreateFolderContext;
+import com.imooc.pan.server.modules.file.context.DeleteFileContext;
+import com.imooc.pan.server.modules.file.context.QueryFileListContext;
+import com.imooc.pan.server.modules.file.context.UpdateFilenameContext;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
+import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -18,4 +24,10 @@ public interface IUserFileService extends IService<RPanUserFile> {
     Long createFolder(CreateFolderContext createFolderContext);
 
     RPanUserFile getUserRootFile(Long userId);
+
+    List<RPanUserFileVO> getFileList(QueryFileListContext context);
+
+    void updateFilename(UpdateFilenameContext context);
+
+    void deleteFile(DeleteFileContext context);
 }
