@@ -6,14 +6,12 @@ import com.imooc.pan.core.response.R;
 import com.imooc.pan.core.utils.IdUtil;
 import com.imooc.pan.server.common.utils.UserIdUtil;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
-import com.imooc.pan.server.modules.file.context.CreateFolderContext;
-import com.imooc.pan.server.modules.file.context.DeleteFileContext;
-import com.imooc.pan.server.modules.file.context.QueryFileListContext;
-import com.imooc.pan.server.modules.file.context.UpdateFilenameContext;
+import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.converter.FileConverter;
 import com.imooc.pan.server.modules.file.enums.DelFlagEnum;
 import com.imooc.pan.server.modules.file.po.CreateFolderPO;
 import com.imooc.pan.server.modules.file.po.DeleteFilePO;
+import com.imooc.pan.server.modules.file.po.SecUploadFilePO;
 import com.imooc.pan.server.modules.file.po.UpdateFilenamePO;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
@@ -116,5 +114,21 @@ public class FileController {
         context.setFileIdList(fileIdList);
         iUserFileService.deleteFile(context);
         return R.success();
+    }
+
+    @ApiOperation(
+            value = "文件秒传",
+            notes = "该接口提供了文件秒传的功能",
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    @PostMapping("/file/sec-upload")
+    public R secUpload(@Validated @RequestBody SecUploadFilePO secUploadFilePO) {
+        SecUploadFileContext context = fileConverter.secUploadFilePO2SecUploadFileContext(secUploadFilePO);
+        boolean result = iUserFileService.secUpload(context);
+        if (result) {
+            return R.success();
+        }
+        return R.fail("文件唯一标识不存在，请动手执行文件上传");
     }
 }
