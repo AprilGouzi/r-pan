@@ -17,14 +17,12 @@
     {
       "name": "swagger2.concat-email",
       "type": "java.lang.String",
-      "sourceType": "com.imooc.pan.swagger2.Swagger2ConfigProperties",
-      "defaultValue": "aprilgouzi@163.com"
+      "sourceType": "com.imooc.pan.swagger2.Swagger2ConfigProperties"
     },
     {
       "name": "swagger2.concat-url",
       "type": "java.lang.String",
-      "sourceType": "com.imooc.pan.swagger2.Swagger2ConfigProperties",
-      "defaultValue": "https:\/\/blog.rubinchu.com"
+      "sourceType": "com.imooc.pan.swagger2.Swagger2ConfigProperties"
     },
     {
       "name": "swagger2.contact-email",
@@ -69,8 +67,7 @@
     {
       "name": "swagger2.term-of-service-url",
       "type": "java.lang.String",
-      "sourceType": "com.imooc.pan.swagger2.Swagger2ConfigProperties",
-      "defaultValue": "http:\/\/127.0.0.1:${server.port}"
+      "sourceType": "com.imooc.pan.swagger2.Swagger2ConfigProperties"
     },
     {
       "name": "swagger2.terms-of-service-url",

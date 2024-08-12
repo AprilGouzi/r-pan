@@ -9,11 +9,9 @@ import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.converter.FileConverter;
 import com.imooc.pan.server.modules.file.enums.DelFlagEnum;
-import com.imooc.pan.server.modules.file.po.CreateFolderPO;
-import com.imooc.pan.server.modules.file.po.DeleteFilePO;
-import com.imooc.pan.server.modules.file.po.SecUploadFilePO;
-import com.imooc.pan.server.modules.file.po.UpdateFilenamePO;
+import com.imooc.pan.server.modules.file.po.*;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
+import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -131,4 +129,32 @@ public class FileController {
         }
         return R.fail("文件唯一标识不存在，请动手执行文件上传");
     }
+
+    @ApiOperation(
+            value = "单文件上传",
+            notes = "该接口提供了单文件上传的功能",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    @PostMapping("file/upload")
+    public R upload(@Validated FileUploadPO fileUploadPO) {
+        FileUploadContext context = fileConverter.fileUploadPO2FileUploadContext(fileUploadPO);
+        iUserFileService.upload(context);
+        return R.success();
+    }
+
+    @ApiOperation(
+            value = "文件分片上传",
+            notes = "该接口提供了文件分片上传的功能",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    @PostMapping("file/chunk-upload")
+    public R<FileChunkUploadVO> chunkUpload(@Validated FileChunkUploadPO fileChunkUploadPO) {
+        FileChunkUploadContext context = fileConverter.fileChunkUploadPO2FileChunkUploadContext(fileChunkUploadPO);
+        FileChunkUploadVO vo = iUserFileService.chunkUpload(context);
+        return R.data(vo);
+    }
+
+
 }

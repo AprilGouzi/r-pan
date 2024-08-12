@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.Date;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -42,13 +44,13 @@ public class RPanFileChunk implements Serializable {
     private Integer chunkNumber;
 
     @ApiModelProperty(value = "过期时间")
-    private LocalDateTime expirationTime;
+    private Date expirationTime;
 
     @ApiModelProperty(value = "创建人")
     private Long createUser;
 
     @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
+    private Date createTime;
 
 
 }

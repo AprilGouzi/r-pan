@@ -107,15 +107,22 @@ public class FileUtils {
      * @param totalSize
      */
     public static void writeStream2File(InputStream inputStream, File targetFile, Long totalSize) throws IOException {
-        createFile(targetFile);
-        RandomAccessFile randomAccessFile = new RandomAccessFile(targetFile, "rw");
-        FileChannel outputChannel = randomAccessFile.getChannel();
-        ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
-        outputChannel.transferFrom(inputChannel, 0L, totalSize);
-        inputChannel.close();
-        outputChannel.close();
-        randomAccessFile.close();
-        inputStream.close();
+        RandomAccessFile randomAccessFile = null;
+        FileChannel outputChannel = null;
+        ReadableByteChannel inputChannel = null;
+        try {
+            createFile(targetFile);
+            randomAccessFile = new RandomAccessFile(targetFile, "rw");
+            outputChannel = randomAccessFile.getChannel();
+            inputChannel = Channels.newChannel(inputStream);
+            outputChannel.transferFrom(inputChannel, 0L, totalSize);
+        } finally {
+            inputChannel.close();
+            outputChannel.close();
+            randomAccessFile.close();
+            inputStream.close();
+        }
+
     }
 
     /**

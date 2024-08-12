@@ -11,8 +11,7 @@
       "name": "com.imooc.pan.cache.caffeine.allow-n-ull-value",
       "type": "java.lang.Boolean",
       "description": "是否允许空值null作为缓存的value com.imooc.pan.cache.caffeine.allow-null-value",
-      "sourceType": "com.imooc.pan.cache.caffeine.config.CaffeineCacheProperties",
-      "defaultValue": true
+      "sourceType": "com.imooc.pan.cache.caffeine.config.CaffeineCacheProperties"
     },
     {
       "name": "com.imooc.pan.cache.caffeine.allow-null-value",

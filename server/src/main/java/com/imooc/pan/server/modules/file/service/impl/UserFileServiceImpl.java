@@ -11,14 +11,17 @@ import com.imooc.pan.core.utils.IdUtil;
 import com.imooc.pan.server.common.event.file.DeleteFileEvent;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.*;
+import com.imooc.pan.server.modules.file.converter.FileConverter;
 import com.imooc.pan.server.modules.file.entity.RPanFile;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 import com.imooc.pan.server.modules.file.enums.DelFlagEnum;
 import com.imooc.pan.server.modules.file.enums.FileTypeEnum;
 import com.imooc.pan.server.modules.file.enums.FolderFlagEnum;
 import com.imooc.pan.server.modules.file.mapper.RPanUserFileMapper;
+import com.imooc.pan.server.modules.file.service.IFileChunkService;
 import com.imooc.pan.server.modules.file.service.IFileService;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
+import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -48,6 +52,12 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
 
     @Autowired
     private IFileService iFileService;
+
+    @Autowired
+    private FileConverter fileConverter;
+
+    @Autowired
+    private IFileChunkService iFileChunkService;
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -147,10 +157,61 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
         return false;
     }
 
+    /**
+     * 单文件上传
+     * <p>
+     * 1、上传文件并保存实体文件的记录
+     * 2、保存用户文件的关系记录
+     *
+     * @param context
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void upload(FileUploadContext context) {
+        saveFile(context);
+        saveUserFile(context.getParentId(),
+                context.getFilename(),
+                FolderFlagEnum.NO,
+                FileTypeEnum.getFileTypeCode(FileUtils.getFileSuffix(context.getFilename())),
+                context.getRecord().getFileId(),
+                context.getUserId(),
+                context.getRecord().getFileSizeDesc());
+
+    }
+
+    /**
+     * 文件分片上传
+     * <p>
+     * 1、上传实体文件
+     * 2、保存分片文件记录
+     * 3、校验是否全部分片上传完成
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public FileChunkUploadVO chunkUpload(FileChunkUploadContext context) {
+        FileChunkSaveContext fileChunkSaveContext = fileConverter.fileChunkUploadContext2FileChunkSaveContext(context);
+        iFileChunkService.saveChunkFile(fileChunkSaveContext);
+        FileChunkUploadVO vo = new FileChunkUploadVO();
+        vo.setMergeFlag(fileChunkSaveContext.getMergeFlagEnum().getCode());
+        return vo;
+    }
 
 
     /**********************************************private*************************************************************/
 
+    /**
+     * 上传文件并保存实体文件记录
+     * 委托给实体文件的Service去完成该操作
+     *
+     * @param context
+     */
+    private void saveFile(FileUploadContext context) {
+        FileSaveContext fileSaveContext = fileConverter.fileUploadContext2FileSaveContext(context);
+        iFileService.saveFile(fileSaveContext);
+        context.setRecord(fileSaveContext.getRecord());
+    }
 
     /**
      * 查询用户文件列表根据文件的唯一标识
