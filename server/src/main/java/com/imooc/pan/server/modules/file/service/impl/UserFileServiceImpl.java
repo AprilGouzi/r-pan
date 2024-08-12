@@ -3,6 +3,7 @@ package com.imooc.pan.server.modules.file.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.imooc.pan.core.constants.RPanConstants;
 import com.imooc.pan.core.exception.RPanBusinessException;
@@ -23,6 +24,7 @@ import com.imooc.pan.server.modules.file.service.IFileService;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
 import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+import com.imooc.pan.server.modules.file.vo.UploadedChunksVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -195,6 +197,30 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
         iFileChunkService.saveChunkFile(fileChunkSaveContext);
         FileChunkUploadVO vo = new FileChunkUploadVO();
         vo.setMergeFlag(fileChunkSaveContext.getMergeFlagEnum().getCode());
+        return vo;
+    }
+
+    /**
+     * 查询用户已上传的分片列表
+     * <p>
+     * 1、查询已上传的分片列表
+     * 2、封装返回实体
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public UploadedChunksVO getUploadedChunks(QueryUploadedChunksContext context) {
+        QueryWrapper queryWrapper = Wrappers.query();
+        queryWrapper.select("chunk_number");
+        queryWrapper.eq("identifier", context.getIdentifier());
+        queryWrapper.eq("create_user", context.getUserId());
+        queryWrapper.gt("expiration_time", new Date());
+
+        List<Integer> uploadedChunks = iFileChunkService.listObjs(queryWrapper, value -> (Integer) value);
+
+        UploadedChunksVO vo = new UploadedChunksVO();
+        vo.setUploadedChunks(uploadedChunks);
         return vo;
     }
 
