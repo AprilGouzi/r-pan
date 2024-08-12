@@ -2,6 +2,7 @@ package com.imooc.pan.server.modules.file.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.imooc.pan.server.modules.file.context.FileChunkMergeAndSaveContext;
 import com.imooc.pan.server.modules.file.context.FileSaveContext;
 import com.imooc.pan.server.modules.file.context.QueryRealFileListContext;
 import com.imooc.pan.server.modules.file.entity.RPanFile;
@@ -26,4 +27,11 @@ public interface IFileService extends IService<RPanFile> {
      * @param context
      */
     void saveFile(FileSaveContext context);
+
+    /**
+     * 合并物理文件并保存物理文件记录
+     *
+     * @param context
+     */
+    void mergeFileChunkAndSaveFile(FileChunkMergeAndSaveContext context);
 }

@@ -2,16 +2,21 @@ package com.imooc.pan.server.modules.file.converter;
 
 import com.imooc.pan.server.modules.file.context.CreateFolderContext;
 import com.imooc.pan.server.modules.file.context.DeleteFileContext;
+import com.imooc.pan.server.modules.file.context.FileChunkMergeAndSaveContext;
+import com.imooc.pan.server.modules.file.context.FileChunkMergeContext;
 import com.imooc.pan.server.modules.file.context.FileChunkSaveContext;
 import com.imooc.pan.server.modules.file.context.FileChunkUploadContext;
 import com.imooc.pan.server.modules.file.context.FileSaveContext;
 import com.imooc.pan.server.modules.file.context.FileUploadContext;
+import com.imooc.pan.server.modules.file.context.QueryUploadedChunksContext;
 import com.imooc.pan.server.modules.file.context.SecUploadFileContext;
 import com.imooc.pan.server.modules.file.context.UpdateFilenameContext;
 import com.imooc.pan.server.modules.file.po.CreateFolderPO;
 import com.imooc.pan.server.modules.file.po.DeleteFilePO;
+import com.imooc.pan.server.modules.file.po.FileChunkMergePO;
 import com.imooc.pan.server.modules.file.po.FileChunkUploadPO;
 import com.imooc.pan.server.modules.file.po.FileUploadPO;
+import com.imooc.pan.server.modules.file.po.QueryUploadedChunksPO;
 import com.imooc.pan.server.modules.file.po.SecUploadFilePO;
 import com.imooc.pan.server.modules.file.po.UpdateFilenamePO;
 import com.imooc.pan.storage.engine.core.context.StoreFileChunkContext;
@@ -20,7 +25,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-08-12T22:50:28+0800",
+    date = "2024-08-12T23:39:13+0800",
     comments = "version: 1.5.2.Final, compiler: javac, environment: Java 1.8.0_131 (Oracle Corporation)"
 )
 @Component
@@ -180,5 +185,56 @@ public class FileConverterImpl implements FileConverter {
         storeFileChunkContext.setUserId( context.getUserId() );
 
         return storeFileChunkContext;
+    }
+
+    @Override
+    public QueryUploadedChunksContext queryUploadedChunksPO2QueryUploadedChunksContext(QueryUploadedChunksPO queryUploadedChunksPO) {
+        if ( queryUploadedChunksPO == null ) {
+            return null;
+        }
+
+        QueryUploadedChunksContext queryUploadedChunksContext = new QueryUploadedChunksContext();
+
+        queryUploadedChunksContext.setIdentifier( queryUploadedChunksPO.getIdentifier() );
+
+        queryUploadedChunksContext.setUserId( com.imooc.pan.server.common.utils.UserIdUtil.get() );
+
+        return queryUploadedChunksContext;
+    }
+
+    @Override
+    public FileChunkMergeContext fileChunkMergePO2FileChunkMergeContext(FileChunkMergePO fileChunkMergePO) {
+        if ( fileChunkMergePO == null ) {
+            return null;
+        }
+
+        FileChunkMergeContext fileChunkMergeContext = new FileChunkMergeContext();
+
+        fileChunkMergeContext.setFilename( fileChunkMergePO.getFilename() );
+        fileChunkMergeContext.setIdentifier( fileChunkMergePO.getIdentifier() );
+        fileChunkMergeContext.setTotalSize( fileChunkMergePO.getTotalSize() );
+
+        fileChunkMergeContext.setUserId( com.imooc.pan.server.common.utils.UserIdUtil.get() );
+        fileChunkMergeContext.setParentId( com.imooc.pan.core.utils.IdUtil.decrypt(fileChunkMergePO.getParentId()) );
+
+        return fileChunkMergeContext;
+    }
+
+    @Override
+    public FileChunkMergeAndSaveContext fileChunkMergeContext2FileChunkMergeAndSaveContext(FileChunkMergeContext context) {
+        if ( context == null ) {
+            return null;
+        }
+
+        FileChunkMergeAndSaveContext fileChunkMergeAndSaveContext = new FileChunkMergeAndSaveContext();
+
+        fileChunkMergeAndSaveContext.setFilename( context.getFilename() );
+        fileChunkMergeAndSaveContext.setIdentifier( context.getIdentifier() );
+        fileChunkMergeAndSaveContext.setTotalSize( context.getTotalSize() );
+        fileChunkMergeAndSaveContext.setParentId( context.getParentId() );
+        fileChunkMergeAndSaveContext.setUserId( context.getUserId() );
+        fileChunkMergeAndSaveContext.setRecord( context.getRecord() );
+
+        return fileChunkMergeAndSaveContext;
     }
 }
