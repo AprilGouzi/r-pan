@@ -4,10 +4,7 @@ package com.imooc.pan.server.modules.file.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
-import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
-import com.imooc.pan.server.modules.file.vo.FolderTreeNodeVO;
-import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
-import com.imooc.pan.server.modules.file.vo.UploadedChunksVO;
+import com.imooc.pan.server.modules.file.vo.*;
 
 import java.util.List;
 
@@ -83,4 +80,34 @@ public interface IUserFileService extends IService<RPanUserFile> {
      * @return
      */
     List<FolderTreeNodeVO> getFolderTree(QueryFolderTreeContext context);
+
+    /**
+     * 文件转移
+     *
+     * @param context
+     */
+    void transfer(TransferFileContext context);
+
+    /**
+     * 文件复制
+     *
+     * @param context
+     */
+    void copy(CopyFileContext context);
+
+    /**
+     * 文件列表搜索
+     *
+     * @param context
+     * @return
+     */
+    List<FileSearchResultVO> search(FileSearchContext context);
+
+    /**
+     * 获取面包屑列表
+     *
+     * @param context
+     * @return
+     */
+    List<BreadcrumbVO> getBreadcrumbs(QueryBreadcrumbsContext context);
 }

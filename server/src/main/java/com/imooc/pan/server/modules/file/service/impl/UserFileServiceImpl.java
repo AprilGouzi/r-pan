@@ -11,6 +11,7 @@ import com.imooc.pan.core.exception.RPanBusinessException;
 import com.imooc.pan.core.utils.FileUtils;
 import com.imooc.pan.core.utils.IdUtil;
 import com.imooc.pan.server.common.event.file.DeleteFileEvent;
+import com.imooc.pan.server.common.event.file.UserSearchEvent;
 import com.imooc.pan.server.common.utils.HttpUtil;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.*;
@@ -24,10 +25,7 @@ import com.imooc.pan.server.modules.file.mapper.RPanUserFileMapper;
 import com.imooc.pan.server.modules.file.service.IFileChunkService;
 import com.imooc.pan.server.modules.file.service.IFileService;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
-import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
-import com.imooc.pan.server.modules.file.vo.FolderTreeNodeVO;
-import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
-import com.imooc.pan.server.modules.file.vo.UploadedChunksVO;
+import com.imooc.pan.server.modules.file.vo.*;
 import com.imooc.pan.storage.engine.core.StorageEngine;
 import com.imooc.pan.storage.engine.core.context.ReadFileContext;
 import org.apache.commons.collections.CollectionUtils;
@@ -305,6 +303,287 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
         List<RPanUserFile> folderRecords = queryFolderRecords(context.getUserId());
         List<FolderTreeNodeVO> result = assembleFolderTreeNodeVOList(folderRecords);
         return result;
+    }
+
+    /**
+     * 文件转移
+     * <p>
+     * 1、权限校验
+     * 2、执行工作
+     *
+     * @param context
+     */
+    @Override
+    public void transfer(TransferFileContext context) {
+        checkTransferCondition(context);
+        doTransfer(context);
+    }
+
+    /**
+     * 文件复制
+     * <p>
+     * 1、条件校验
+     * 2、执行动作
+     *
+     * @param context
+     */
+    @Override
+    public void copy(CopyFileContext context) {
+        checkCopyCondition(context);
+        doCopy(context);
+    }
+
+    /**
+     * 文件列表搜索
+     * <p>
+     * 1、执行文件搜索
+     * 2、拼装文件的父文件夹名称
+     * 3、执行文件搜索后的后置动作
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public List<FileSearchResultVO> search(FileSearchContext context) {
+        List<FileSearchResultVO> result = doSearch(context);
+        fillParentFilename(result);
+        afterSearch(context);
+        return result;
+    }
+
+    /**
+     * 获取面包屑列表
+     * <p>
+     * 1、获取用户所有文件夹信息
+     * 2、拼接需要用到的面包屑的列表
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public List<BreadcrumbVO> getBreadcrumbs(QueryBreadcrumbsContext context) {
+        List<RPanUserFile> folderRecords = queryFolderRecords(context.getUserId());
+        Map<Long, BreadcrumbVO> prepareBreadcrumbVOMap = folderRecords.stream().map(BreadcrumbVO::transfer).collect(Collectors.toMap(BreadcrumbVO::getId, a -> a));
+        BreadcrumbVO currentNode;
+        Long fileId = context.getFileId();
+        List<BreadcrumbVO> result = Lists.newLinkedList();
+        do {
+            currentNode = prepareBreadcrumbVOMap.get(fileId);
+            if (Objects.nonNull(currentNode)) {
+                result.add(0, currentNode);// a b c -> c b a
+                fileId = currentNode.getParentId();
+            }
+        } while (Objects.nonNull(currentNode));
+        return result;
+    }
+
+    /**
+     * 搜索的后置操作
+     * <p>
+     * 1、发布文件搜索的事件
+     *
+     * @param context
+     */
+    private void afterSearch(FileSearchContext context) {
+        UserSearchEvent event = new UserSearchEvent(this, context.getKeyword(), context.getUserId());
+        applicationContext.publishEvent(event);//事件机制我们可以将相互耦合的代码解耦，从而方便功能拓展和调整。
+    }
+
+
+    /**
+     * 填充文件列表的父文件名称
+     *
+     * @param result
+     */
+    private void fillParentFilename(List<FileSearchResultVO> result) {
+        if (CollectionUtils.isEmpty(result)) {
+            return;
+        }
+        List<Long> parentIdList = result.stream().map(FileSearchResultVO::getParentId).collect(Collectors.toList());
+        List<RPanUserFile> parentRecords = listByIds(parentIdList);
+        Map<Long, String> fileId2filenameMap = parentRecords.stream().collect(Collectors.toMap(RPanUserFile::getFileId, RPanUserFile::getFilename));
+        result.stream().forEach(vo -> vo.setParentFilename(fileId2filenameMap.get(vo.getParentId())));
+    }
+
+    /**
+     * 搜索文件列表
+     *
+     * @param context
+     * @return
+     */
+    private List<FileSearchResultVO> doSearch(FileSearchContext context) {
+        return baseMapper.searchFile(context);
+    }
+
+    /**
+     * 执行文件复制的动作
+     *
+     * @param context
+     */
+    private void doCopy(CopyFileContext context) {
+        List<RPanUserFile> prepareRecords = context.getPrepareRecords();
+        if (CollectionUtils.isNotEmpty(prepareRecords)) {
+            List<RPanUserFile> allRecords = Lists.newArrayList();
+            prepareRecords.stream().forEach(record -> assembleCopyChildRecord(allRecords, record, context.getTargetParentId(), context.getUserId()));
+            if (!saveBatch(allRecords)) {
+                throw new RPanBusinessException("文件复制失败");
+            }
+        }
+    }
+
+    /**
+     * 拼装当前文件记录以及所有的子文件记录
+     *
+     * @param allRecords
+     * @param record
+     * @param targetParentId
+     * @param userId
+     */
+    private void assembleCopyChildRecord(List<RPanUserFile> allRecords, RPanUserFile record, Long targetParentId, Long userId) {
+        Long newFileId = IdUtil.get();
+        Long oldFileId = record.getFileId();
+
+        record.setParentId(targetParentId);
+        record.setFileId(newFileId);
+        record.setUserId(userId);
+        record.setCreateUser(userId);
+        record.setCreateTime(new Date());
+        record.setUpdateUser(userId);
+        record.setUpdateTime(new Date());
+        handleDuplicateFilename(record);
+
+        allRecords.add(record);
+
+        if (checkIsFolder(record)) {
+            List<RPanUserFile> childRecords = findChildRecords(oldFileId);
+            if (CollectionUtils.isEmpty(childRecords)) {
+                return;
+            }
+            childRecords.stream().forEach(childRecord -> assembleCopyChildRecord(allRecords, childRecord, newFileId, userId));
+        }
+
+    }
+
+    /**
+     * 查找下一级的文件记录
+     *
+     * @param parentId
+     * @return
+     */
+    private List<RPanUserFile> findChildRecords(Long parentId) {
+        QueryWrapper queryWrapper = Wrappers.query();
+        queryWrapper.eq("parent_id", parentId);
+        queryWrapper.eq("del_flag", DelFlagEnum.NO.getCode());
+        return list(queryWrapper);
+    }
+
+
+    /**
+     * 文件转移的条件校验
+     * <p>
+     * 1、目标文件必须是一个文件夹
+     * 2、选中的要转移的文件列表中不能含有目标文件夹以及其子文件夹
+     *
+     * @param context
+     */
+    private void checkCopyCondition(CopyFileContext context) {
+        Long targetParentId = context.getTargetParentId();
+        if (!checkIsFolder(getById(targetParentId))) {
+            throw new RPanBusinessException("目标文件不是一个文件夹");
+        }
+        List<Long> fileIdList = context.getFileIdList();
+        List<RPanUserFile> prepareRecords = listByIds(fileIdList);
+        context.setPrepareRecords(prepareRecords);
+        if (checkIsChildFolder(prepareRecords, targetParentId, context.getUserId())) {
+            throw new RPanBusinessException("目标文件夹ID不能是选中文件列表的文件夹ID或其子文件夹ID");
+        }
+    }
+
+
+    /**
+     * 执行文件转移的动作
+     *
+     * @param context
+     */
+    private void doTransfer(TransferFileContext context) {
+        List<RPanUserFile> prepareRecords = context.getPrepareRecords();
+        prepareRecords.stream().forEach(record -> {
+            record.setParentId(context.getTargetParentId());
+            record.setUserId(context.getUserId());
+            record.setCreateUser(context.getUserId());
+            record.setCreateTime(new Date());
+            record.setUpdateUser(context.getUserId());
+            record.setUpdateTime(new Date());
+            handleDuplicateFilename(record);
+        });
+        if (!updateBatchById(prepareRecords)) {
+            throw new RPanBusinessException("文件转移失败");
+        }
+    }
+
+    /**
+     * 文件转移的条件校验
+     * <p>
+     * 1、目标文件必须是一个文件夹
+     * 2、选中的要转移的文件列表中不能含有目标文件夹以及其子文件夹
+     *
+     * @param context
+     */
+    private void checkTransferCondition(TransferFileContext context) {
+        Long targetParentId = context.getTargetParentId();
+        if (!checkIsFolder(getById(targetParentId))) {
+            throw new RPanBusinessException("目标文件不是一个文件夹");
+        }
+        List<Long> fileIdList = context.getFileIdList();
+        List<RPanUserFile> prepareRecords = listByIds(fileIdList);
+        context.setPrepareRecords(prepareRecords);
+        if (checkIsChildFolder(prepareRecords, targetParentId, context.getUserId())) {
+            throw new RPanBusinessException("目标文件夹ID不能是选中文件列表的文件夹ID或其子文件夹ID");
+        }
+    }
+
+    /**
+     * 校验目标文件夹ID是都是要操作的文件记录的文件夹ID以及其子文件夹ID
+     * <p>
+     * 1、如果要操作的文件列表中没有文件夹，那就直接返回false
+     * 2、拼装文件夹ID以及所有子文件夹ID，判断存在即可
+     *
+     * @param prepareRecords
+     * @param targetParentId
+     * @param userId
+     * @return
+     */
+    private boolean checkIsChildFolder(List<RPanUserFile> prepareRecords, Long targetParentId, Long userId) {
+        prepareRecords = prepareRecords.stream().filter(record -> Objects.equals(record.getFolderFlag(), FolderFlagEnum.YES.getCode())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(prepareRecords)) {
+            return false;
+        }
+        List<RPanUserFile> folderRecords = queryFolderRecords(userId);
+        Map<Long, List<RPanUserFile>> folderRecordMap = folderRecords.stream().collect(Collectors.groupingBy(RPanUserFile::getParentId));
+        List<RPanUserFile> unavailableFolderRecords = Lists.newArrayList();
+        unavailableFolderRecords.addAll(prepareRecords);
+        prepareRecords.stream().forEach(record -> findAllChildFolderRecords(unavailableFolderRecords, folderRecordMap, record));
+        List<Long> unavailableFolderRecordIds = unavailableFolderRecords.stream().map(RPanUserFile::getFileId).collect(Collectors.toList());
+        return unavailableFolderRecordIds.contains(targetParentId);
+    }
+
+    /**
+     * 查找文件夹的所有子文件夹记录
+     *
+     * @param unavailableFolderRecords
+     * @param folderRecordMap
+     * @param record
+     */
+    private void findAllChildFolderRecords(List<RPanUserFile> unavailableFolderRecords, Map<Long, List<RPanUserFile>> folderRecordMap, RPanUserFile record) {
+        if (Objects.isNull(record)) {
+            return;
+        }
+        List<RPanUserFile> childFolderRecords = folderRecordMap.get(record.getFileId());
+        if (CollectionUtils.isEmpty(childFolderRecords)) {
+            return;
+        }
+        unavailableFolderRecords.addAll(childFolderRecords);
+        childFolderRecords.stream().forEach(childRecord -> findAllChildFolderRecords(unavailableFolderRecords, folderRecordMap, childRecord));
     }
 
     /**
