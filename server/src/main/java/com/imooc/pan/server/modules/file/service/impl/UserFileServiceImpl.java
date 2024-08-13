@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.imooc.pan.core.constants.RPanConstants;
 import com.imooc.pan.core.exception.RPanBusinessException;
 import com.imooc.pan.core.utils.FileUtils;
@@ -24,6 +25,7 @@ import com.imooc.pan.server.modules.file.service.IFileChunkService;
 import com.imooc.pan.server.modules.file.service.IFileService;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
 import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
+import com.imooc.pan.server.modules.file.vo.FolderTreeNodeVO;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
 import com.imooc.pan.server.modules.file.vo.UploadedChunksVO;
 import com.imooc.pan.storage.engine.core.StorageEngine;
@@ -40,10 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -272,6 +271,93 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
             throw new RPanBusinessException("文件夹暂不支持下载");
         }
         doDownload(record, context.getResponse());
+    }
+
+    /**
+     * 文件预览
+     * 1、参数校验：校验文件是否存在，文件是否属于该用户
+     * 2、校验该文件是不是一个文件夹
+     * 3、执行预览的动作
+     *
+     * @param context
+     */
+    @Override
+    public void preview(FilePreviewContext context) {
+        RPanUserFile record = getById(context.getFileId());
+        checkOperatePermission(record, context.getUserId());
+        if (checkIsFolder(record)) {
+            throw new RPanBusinessException("文件夹暂不支持下载");
+        }
+        doPreview(record, context.getResponse());
+    }
+
+    /**
+     * 查询用户的文件夹树
+     * <p>
+     * 1、查询出该用户的所有文件夹列表
+     * 2、在内存中拼装文件夹树
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public List<FolderTreeNodeVO> getFolderTree(QueryFolderTreeContext context) {
+        List<RPanUserFile> folderRecords = queryFolderRecords(context.getUserId());
+        List<FolderTreeNodeVO> result = assembleFolderTreeNodeVOList(folderRecords);
+        return result;
+    }
+
+    /**
+     * 拼装文件夹树列表
+     *
+     * @param folderRecords
+     * @return
+     */
+    private List<FolderTreeNodeVO> assembleFolderTreeNodeVOList(List<RPanUserFile> folderRecords) {
+        if (CollectionUtils.isEmpty(folderRecords)) {
+            return Lists.newArrayList();
+        }
+        List<FolderTreeNodeVO> mappedFolderTreeNodeVOList = folderRecords.stream().map(fileConverter::rPanUserFile2FolderTreeNodeVO).collect(Collectors.toList());
+        Map<Long, List<FolderTreeNodeVO>> mappedFolderTreeNodeVOMap = mappedFolderTreeNodeVOList.stream().collect(Collectors.groupingBy(FolderTreeNodeVO::getParentId));
+        for (FolderTreeNodeVO node : mappedFolderTreeNodeVOList) {
+            List<FolderTreeNodeVO> children = mappedFolderTreeNodeVOMap.get(node.getId());
+            if (CollectionUtils.isNotEmpty(children)) {
+                node.getChildren().addAll(children);
+            }
+        }
+        return mappedFolderTreeNodeVOList.stream().filter(node -> Objects.equals(node.getParentId(), FileConstants.TOP_PARENT_ID)).collect(Collectors.toList());
+    }
+
+    /**
+     * 查询用户所有有效的文件夹信息
+     *
+     * @param userId
+     * @return
+     */
+    private List<RPanUserFile> queryFolderRecords(Long userId) {
+        QueryWrapper queryWrapper = Wrappers.query();
+        queryWrapper.eq("user_id", userId);
+        queryWrapper.eq("folder_flag", FolderFlagEnum.YES.getCode());//文件夹
+        queryWrapper.eq("del_flag", DelFlagEnum.NO.getCode());//未删除
+        return list(queryWrapper);
+    }
+
+    /**
+     * 执行文件预览的动作
+     * 1、查询文件的真实存储路径
+     * 2、添加跨域的公共响应头
+     * 3、委托文件存储引擎去读取文件内容到响应的输出流中
+     *
+     * @param record
+     * @param response
+     */
+    private void doPreview(RPanUserFile record, HttpServletResponse response) {
+        RPanFile realFileRecord = iFileService.getById(record.getRealFileId());
+        if (Objects.isNull(realFileRecord)) {
+            throw new RPanBusinessException("当前的文件记录不存在");
+        }
+        addCommonResponseHeader(response, realFileRecord.getFilePreviewContentType());
+        realFile2OutputStream(realFileRecord.getRealPath(), response);
     }
 
     /**
