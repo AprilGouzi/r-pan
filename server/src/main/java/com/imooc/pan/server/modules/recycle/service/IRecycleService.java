@@ -2,6 +2,7 @@ package com.imooc.pan.server.modules.recycle.service;
 
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
 import com.imooc.pan.server.modules.recycle.context.QueryRecycleFileListContext;
+import com.imooc.pan.server.modules.recycle.context.RestoreContext;
 
 import java.util.List;
 
@@ -18,4 +19,11 @@ public interface IRecycleService {
      * @return
      */
     List<RPanUserFileVO> recycles(QueryRecycleFileListContext context);
+
+    /**
+     * 文件还原
+     *
+     * @param context
+     */
+    void restore(RestoreContext context);
 }
