@@ -6,8 +6,10 @@ import com.imooc.pan.core.response.R;
 import com.imooc.pan.core.utils.IdUtil;
 import com.imooc.pan.server.common.utils.UserIdUtil;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+import com.imooc.pan.server.modules.recycle.context.DeleteContext;
 import com.imooc.pan.server.modules.recycle.context.QueryRecycleFileListContext;
 import com.imooc.pan.server.modules.recycle.context.RestoreContext;
+import com.imooc.pan.server.modules.recycle.po.DeletePO;
 import com.imooc.pan.server.modules.recycle.po.RestorePO;
 import com.imooc.pan.server.modules.recycle.service.IRecycleService;
 import io.swagger.annotations.Api;
@@ -66,6 +68,23 @@ public class RecycleController {
         return R.success();
     }
 
+    @ApiOperation(
+            value = "删除的文件批量彻底删除",
+            notes = "该接口提供了删除的文件批量彻底删除的功能",
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    @DeleteMapping("recycle")
+    public R delete(@Validated @RequestBody DeletePO deletePO) {
+        DeleteContext context = new DeleteContext();
+        context.setUserId(UserIdUtil.get());
 
+        String fileIds = deletePO.getFileIds();
+        List<Long> fileIdList = Splitter.on(RPanConstants.COMMON_SEPARATOR).splitToList(fileIds).stream().map(IdUtil::decrypt).collect(Collectors.toList());
+        context.setFileIdList(fileIdList);
+
+        iRecycleService.delete(context);
+        return R.success();
+    }
 
 }

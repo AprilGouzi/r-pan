@@ -1,6 +1,7 @@
 package com.imooc.pan.server.modules.recycle.service;
 
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+import com.imooc.pan.server.modules.recycle.context.DeleteContext;
 import com.imooc.pan.server.modules.recycle.context.QueryRecycleFileListContext;
 import com.imooc.pan.server.modules.recycle.context.RestoreContext;
 
@@ -26,4 +27,11 @@ public interface IRecycleService {
      * @param context
      */
     void restore(RestoreContext context);
+
+    /**
+     * 文件彻底删除
+     *
+     * @param context
+     */
+    void delete(DeleteContext context);
 }

@@ -1,4 +1,4 @@
-package com.imooc.pan.server.common.event.file;
+package com.imooc.pan.server.common.event.search;
 
 /**
  * @author AprilGouzi

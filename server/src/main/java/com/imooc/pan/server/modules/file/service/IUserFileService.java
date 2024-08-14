@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 import com.imooc.pan.server.modules.file.vo.*;
+import com.imooc.pan.server.modules.recycle.context.DeleteContext;
 
 import java.util.List;
 
@@ -110,4 +111,13 @@ public interface IUserFileService extends IService<RPanUserFile> {
      * @return
      */
     List<BreadcrumbVO> getBreadcrumbs(QueryBreadcrumbsContext context);
+
+
+    /**
+     * 递归查询所有的子文件信息
+     *
+     * @param records
+     * @return
+     */
+    List<RPanUserFile> findAllFileRecords(List<RPanUserFile> records);
 }

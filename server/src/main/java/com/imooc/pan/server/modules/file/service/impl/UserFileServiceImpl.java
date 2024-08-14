@@ -11,7 +11,7 @@ import com.imooc.pan.core.exception.RPanBusinessException;
 import com.imooc.pan.core.utils.FileUtils;
 import com.imooc.pan.core.utils.IdUtil;
 import com.imooc.pan.server.common.event.file.DeleteFileEvent;
-import com.imooc.pan.server.common.event.file.UserSearchEvent;
+import com.imooc.pan.server.common.event.search.UserSearchEvent;
 import com.imooc.pan.server.common.utils.HttpUtil;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.*;
@@ -375,6 +375,65 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
             }
         } while (Objects.nonNull(currentNode));
         return result;
+    }
+
+    /**
+     * 递归查询所有的子文件信息（递归容易栈溢出）
+     *
+     * @param records
+     * @return
+     */
+    @Override
+    public List<RPanUserFile> findAllFileRecords(List<RPanUserFile> records) {
+        List<RPanUserFile> result = Lists.newArrayList(records);//体现多态，同一操作不同的表现
+        if (CollectionUtils.isEmpty(result)) {
+            return result;
+        }
+        long folderCount = result.stream().
+                filter(record -> Objects.equals(record.getFolderFlag(), FolderFlagEnum.YES.getCode()))
+                .count();
+        if (folderCount == 0) {
+            return result;
+        }
+        records.stream().forEach(record -> doFindAllChildRecords(result, record));
+        return result;
+    }
+
+    /**
+     * 递归查询所有的子文件列表
+     * 忽略是否删除的标识
+     *
+     * @param result
+     * @param record
+     */
+    private void doFindAllChildRecords(List<RPanUserFile> result, RPanUserFile record) {
+        if (Objects.isNull(record)) {
+            return;
+        }
+        if (!checkIsFolder(record)) {
+            return;
+        }
+        List<RPanUserFile> childRecords = findChildRecordsIgnoreDelFlag(record.getFileId());
+        if (CollectionUtils.isEmpty(childRecords)) {
+            return;
+        }
+        result.addAll(childRecords);
+        childRecords.stream()
+                .filter(childRecord -> FolderFlagEnum.YES.getCode().equals(childRecord.getFolderFlag()))
+                .forEach(childRecord -> doFindAllChildRecords(result, childRecord));
+    }
+
+    /**
+     * 查询文件夹下面的文件记录，忽略删除标识
+     *
+     * @param fileId
+     * @return
+     */
+    private List<RPanUserFile> findChildRecordsIgnoreDelFlag(Long fileId) {
+        QueryWrapper queryWrapper = Wrappers.query();
+        queryWrapper.eq("parent_id", fileId);
+        List<RPanUserFile> childRecords = list(queryWrapper);
+        return childRecords;
     }
 
     /**
