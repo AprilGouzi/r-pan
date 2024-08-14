@@ -12,6 +12,6 @@ import com.imooc.pan.server.modules.log.entity.RPanErrorLog;
  * @author aprilgouzi
  * @since 2024-07-23
  */
-public interface IRPanErrorLogService extends IService<RPanErrorLog> {
+public interface IErrorLogService extends IService<RPanErrorLog> {
 
 }

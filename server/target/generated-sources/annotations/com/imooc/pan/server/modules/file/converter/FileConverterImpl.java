@@ -21,13 +21,14 @@ import com.imooc.pan.server.modules.file.po.QueryUploadedChunksPO;
 import com.imooc.pan.server.modules.file.po.SecUploadFilePO;
 import com.imooc.pan.server.modules.file.po.UpdateFilenamePO;
 import com.imooc.pan.server.modules.file.vo.FolderTreeNodeVO;
+import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
 import com.imooc.pan.storage.engine.core.context.StoreFileChunkContext;
 import javax.annotation.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-08-13T17:47:39+0800",
+    date = "2024-08-14T17:17:49+0800",
     comments = "version: 1.5.2.Final, compiler: javac, environment: Java 1.8.0_131 (Oracle Corporation)"
 )
 @Component
@@ -255,5 +256,24 @@ public class FileConverterImpl implements FileConverter {
         folderTreeNodeVO.setChildren( com.google.common.collect.Lists.newArrayList() );
 
         return folderTreeNodeVO;
+    }
+
+    @Override
+    public RPanUserFileVO rPanUserFile2RPanUserFileVO(RPanUserFile record) {
+        if ( record == null ) {
+            return null;
+        }
+
+        RPanUserFileVO rPanUserFileVO = new RPanUserFileVO();
+
+        rPanUserFileVO.setFileId( record.getFileId() );
+        rPanUserFileVO.setParentId( record.getParentId() );
+        rPanUserFileVO.setFilename( record.getFilename() );
+        rPanUserFileVO.setFileSizeDesc( record.getFileSizeDesc() );
+        rPanUserFileVO.setFolderFlag( record.getFolderFlag() );
+        rPanUserFileVO.setFileType( record.getFileType() );
+        rPanUserFileVO.setUpdateTime( record.getUpdateTime() );
+
+        return rPanUserFileVO;
     }
 }

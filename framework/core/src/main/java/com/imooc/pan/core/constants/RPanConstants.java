@@ -69,4 +69,9 @@ public interface RPanConstants {
      */
     String BASE_COMPONENT_SCAN_PATH = "com.imooc.pan";
 
+    /**
+     * 公用加密字符串
+     */
+    String COMMON_ENCRYPT_STR = "****";
+
 }

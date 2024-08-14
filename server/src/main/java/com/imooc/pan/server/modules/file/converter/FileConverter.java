@@ -4,6 +4,7 @@ import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 import com.imooc.pan.server.modules.file.po.*;
 import com.imooc.pan.server.modules.file.vo.FolderTreeNodeVO;
+import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
 import com.imooc.pan.storage.engine.core.context.StoreFileChunkContext;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -58,4 +59,6 @@ public interface FileConverter {
     @Mapping(target = "id", source = "record.fileId")
     @Mapping(target = "children", expression = "java(com.google.common.collect.Lists.newArrayList())")
     FolderTreeNodeVO rPanUserFile2FolderTreeNodeVO(RPanUserFile record);
+
+    RPanUserFileVO rPanUserFile2RPanUserFileVO(RPanUserFile record);
 }

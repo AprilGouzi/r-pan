@@ -120,4 +120,27 @@ public interface IUserFileService extends IService<RPanUserFile> {
      * @return
      */
     List<RPanUserFile> findAllFileRecords(List<RPanUserFile> records);
+
+    /**
+     * 递归查询所有的子文件信息
+     *
+     * @param fileIdList
+     * @return
+     */
+    List<RPanUserFile> findAllFileRecordsByFileIdList(List<Long> fileIdList);
+
+    /**
+     * 实体转换
+     *
+     * @param records
+     * @return
+     */
+    List<RPanUserFileVO> transferVOList(List<RPanUserFile> records);
+
+    /**
+     * 文件下载 不校验用户是否是否是上传用户
+     *
+     * @param context
+     */
+    void downloadWithoutCheckUser(FileDownloadContext context);
 }
